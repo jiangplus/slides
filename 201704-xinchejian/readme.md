@@ -56,6 +56,8 @@ Secure Scuttlebutt - Decentralized Social Network
 
 We need to be decentralized!!
 
+![image](dominic2.jpg)
+
 ---
 
 Secure Scuttlebutt：
@@ -108,6 +110,16 @@ Patchwork：
 
 ---
 
+Secure Scuttlebutt的一些限制：
+
+  * 单个节点很难管理大量的数据
+  * 基于pull模式，很难进行push
+  * 时效性弱于即时通讯软件
+  * 帐号无法恢复
+  * 依赖Gossip Protocol，有一定冗余
+
+---
+
 Links:
 
  * https://staltz.com/an-off-grid-social-network.html
@@ -117,11 +129,7 @@ Links:
 
 ---
 
-Secure Scuttlebutt的一些限制：
+Join a pub!
 
-  * 单个节点很难管理大量的数据
-  * 基于pull模式，很难进行push
-  * 时效性弱于即时通讯软件
-  * 帐号无法恢复
-  * 依赖Gossip Protocol，有一定冗余
+ssb.piple.in:8008:@bSv6il/f8Llg0S/P59KeTpTdMmAdnKMASai7sX+Hifg=.ed25519~XI++AhntkQT3XyrfH1KWzqaePUMmPuHg0P+t80ngOKU=
 
