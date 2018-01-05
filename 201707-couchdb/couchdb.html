@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CouchDB</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# CouchDB
+## Stay Relaxed
+by jiangplus
+
+---
+
+#### Couch 是 Cluster Of Unreliable Commodity Hardware 的缩写
+#### 目标在廉价的，不可靠的硬件上构建可靠的，可扩展的分布式数据库集群
+#### 拥抱 Web 的架构，易于使用，易于配置，易于开发
+
+```
+   Apache CouchDB has started. Time to relax.
+```
+
+#### logo
+
+![slogan](couch-slogan.png)
+
+---
+
+# 简介
+
+ * 文档型数据库，使用 Erlang 开发
+
+ * 可以有多个数据库，没有表的概念，以 document 为单位
+
+ * 每一个文档是 id, rev, value
+
+ * 可以写入二进制文件，attachment
+
+ * 2005首次发布，2008年进入 Apache 基金会
+
+ * 当前版本是2.0
+
+---
+
+# 基本特性
+
+ * schemaless
+
+ * 使用 HTTP/JSON，非常易于使用，符合 REST 设计风格
+
+ * 可以使用 JS 编写 map/reduce，基于 spidermonkey 引擎
+
+ * 内置基于 Web 的管理界面
+
+ * 容易使用，容易开发工具，也容易实现
+
+ * offline-first
+
+ * NPM 使用 Couchdb
+
+---
+
+# REST API
+
+ * 查看数据库
+
+```
+   curl http://127.0.0.1:5984/
+```
+
+```
+curl -X GET http://127.0.0.1:5984/_all_dbs
+```
+
+ * 创建和删除数据库
+
+```
+curl -X PUT http://127.0.0.1:5984/baseball
+```
+
+```
+curl -X DELETE http://127.0.0.1:5984/plankton
+```
+
+---
+
+ * 创建和更新文档
+
+```
+curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af  \
+-d '{"title":"There is Nothing Left to Lose","artist":"Foo Fighters"}'
+
+{"ok":true,"id":"6e1295ed6c29495e54cc05947f18c8af","rev":"1-2902191555"}
+```
+
+
+```
+curl -X GET http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af
+
+{"_id":"6e1295ed6c29495e54cc05947f18c8af","_rev":"1-2902191555",
+"title":"There is Nothing Left to Lose","artist":"Foo Fighters"}
+```
+
+---
+
+ * 创建和更新文档
+
+```
+curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af \
+     -d '{"title":"There is Nothing Left to Lose","artist":"Foo Fighters","year":"1997"}'
+
+{"error":"conflict","reason":"Document update conflict."}
+```
+
+```
+curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af \
+     -d '{"_rev":"1-2902191555","title":"There is Nothing Left to Lose", \
+     "artist":"Foo Fighters","year":"1997"}'
+
+{"ok":true,"id":"6e1295ed6c29495e54cc05947f18c8af",
+"rev":"2-8aff9ee9d06671fa89c99d20a4b3ae"}
+```
+
+---
+
+```
+curl -vX PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af/artwork.jpg?rev=2-2739352689 \
+     --data-binary @artwork.jpg -H "Content-Type:image/jpg"
+```
+
+---
+
+# Couchdb 有四个实现
+
+ * 最早的 Apache Couchdb，基于 Erlang
+  
+ * 被 IBM 收购的 Cloudant，开发了 BigCouch，后被 merge 回去
+  
+ * 最强大的 Couchbase，适合移动端应用
+  
+ * 基于 JS 的 Pouchdb
+
+---
+
+# Erlang的数据库
+
+ * ETS/DETS
+
+ * Mnesia
+
+ * Couchdb
+
+ * Riak
+
+ * BarrelDB
+
+ * DalmatinerDB
+
+---
+
+# 索引和查询
+
+ * 数据储存在B-Tree上，数据只增不减，文件越来越大，需要定期做compact
+
+ * 支持类似mongodb的基于json的查询语言
+
+ * 只有按照key读取才是高效的，需要针对查询创建索引才能保证查询的性能
+
+ * 通过JS函数计算的任意值作为索引，也可以使用多个key，并生成自定义视图
+ 
+ * 可以使用show和list函数渲染结果，返回非json格式的数据
+
+---
+
+# 创建视图
+
+```
+function (doc) {
+  if (doc.type === 'post' && doc.tags && Array.isArray(doc.tags)) {
+    doc.tags.forEach(function (tag) {
+      emit(tag.toLowerCase(), 1);
+    });
+  }
+}
+```
+
+---
+
+# 一致性模型
+
+ * 读取的每一条记录有版本号，更新文档时需要把rev带上
+
+ * 如果数据库当前的rev比这更新，表示当前文档已经被其他请求修改，会报错，需要重新读取记录，再写入
+
+ * Couchdb 的模型是最终一致的，基于乐观锁，MVCC
+
+![consistency](intro-consistency.png)
+
+---
+
+# Replication
+
+ * 增量的同步机制 Changes Feed
+
+ * 同样基于 HTTP 的 REST API
+
+ * 使用 filter 函数进行部分同步
+
+ * Push Replication / Pull Replication / Continuous Replication
+
+ * master-master 和冲突处理
+
+
+---
+
+# Replication
+
+```
+curl -vX POST http://127.0.0.1:5984/_replicate \
+     -d '{"source":"albums","target":"albums-replica"}' \
+     -H "Content-Type: application/json"
+```
+
+---
+
+# 分布式与集群
+
+ * 之前Couchdb并没有分布式机制，每一个节点是独立的
+
+ * 节点之间有replication同步机制，可以在节点间同步数据，作为分布式集群。
+
+ * Couchdb 2.0之后有了原生的集群功能
+
+---
+
+# Couchbase
+
+ * 集群和并发部分使用 Erlang，储存使用 C++
+
+ * 内置集群功能
+
+ * 集成 memcached 的内存缓存
+
+ * 提供强大的 N1QL
+
+---
+
+# 其他能力
+
+  Validation
+
+  安全模型
+
+  可以直接部署在公共网络，设置 CORS
+
+---
+
+# Offline first
+
+ * 服务端和客户端（浏览器，移动应用）的数据同步架构
+
+ * 完备，一致，增量，实时
+
+ * 结合安全机制和验证模型
+
+---
+
+    </textarea>
+    <script src="./remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>

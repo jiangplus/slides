@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Void</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle
+
+# Void
+## Decentralized Social Network
+by jiangplus
+
+---
+
+# 当前最重要的互联网产品有哪些？
+
+### Google, Amazon, Facebook
+### 微信，淘宝，百度
+### 微信朋友圈，公众号，微博，知乎，今日头条
+
+---
+
+### 互联网的诞生
+
+作为一个分散的，容灾的去中心网络
+
+但今天的互联网前所未有的集中
+
+### 中国的互联网的开端
+
+『跨越长城，走向世界』
+
+而今天比以往任何时候都更封闭，更垄断，更与世界割裂
+
+### WWW
+
+核心 Hypertext 和 Hyperlink，是为了一个开放互联的网络
+
+Google PageRank 的基础，没有超链接就没有搜索引擎
+
+而现在最大的网络都是私有的，受控的，构成垄断企业的护城河
+
+---
+
+# Web Re-decentralized
+
+---
+
+# What we need?
+
+开放的网络
+
+中立的网络
+
+尊重个人自由和隐私的网络
+
+自治的网络
+
+永久可持续的网络
+
+---
+
+# What we found?
+
+BitTorrent
+
+Blockchain (Bitcoin & Ethereum)
+
+Tor & Shadowsocks
+
+git
+
+---
+
+# What can we try?
+
+构建一个连接人的网络
+
+开放与互联，开源，可扩展
+
+加密学保证的安全性，可靠性，隐私性
+
+没有单点服务器、垄断的服务商
+
+节点自治，网络自组织
+
+不会因为监控和攻击被摧毁
+
+易于使用，不易被滥用
+
+（避免 darknet？）
+
+---
+
+# 借鉴区块链和 Dat
+
+Authenticated Data Structure
+
+ * 每个用户生成密码学签名和数据加密的密钥对
+
+   使用公钥作为用户标识，持有私钥作为用户控制权的证明
+
+ * 携带任意文本内容和元数据的消息体
+
+ * 每条消息附带 seq 序列号，和上一条消息的 hash，形成链表结构的消息序列，构成 feed
+
+   向量钟和因果关系
+
+   append-only
+
+---
+
+# 借鉴区块链
+
+ * 消息体的 hash 作为 key，并使用私钥签名
+
+ * 每条消息都可以验证发布者，内容不可篡改，构成严格的逻辑序列
+
+ * 每条消息承载的内容可以作为发布博客文章，朋友圈状态，聊天内容
+
+   或其它扩展协议
+
+ * 通过 hash 引用 message，通过 public key 引用 feed
+
+---
+
+![feed](ssb-account.svg)
+
+---
+
+# 基于分布式系统
+
+ * 将 feed 的消息在网络中分发扩散：Gossiping
+
+ * Amazon DynamoDB 的论文：Anti-Entropy
+
+   基于逻辑向量钟的 Gossiping 优化，节点缓存 feed 并根据 seq 更新新数据，收敛到一致状态
+
+ * 验证 hash 和 signature，证明数据完整性和发布来源
+
+
+---
+
+# 关于人的网络
+
+ * 每个节点的 feed 可以声明关注的其他 feed，follow/unfollow
+
+ * 其他节点根据这个 feed 的声明的关注关系返回 following feed 的新消息，高效同步数据
+
+ * 关注关系是一种弱信任关系，当一个 feed 关注一个 feed，意味着愿意持有这些数据，可以帮助缓存这些数据
+
+   另外的节点需要查找数据时，也就容易找到数据
+
+   志愿缓存朋友的数据，并且不易被滥用，实现自组织
+
+   通过 unfollow 驱逐坏人，anti-spamming
+
+ * 朋友的朋友通常也是你的朋友，利用数据聚集性，提升网络效率
+
+---
+
+# 关于人的网络
+
+### 从人的网络重新构建物理的网络
+
+---
+
+# 安全性，隐私性，可靠性
+
+ * 每个人都可以生成 id，发布内容，成为节点
+
+ * 使用密钥对作为身份标识，不依赖特定服务商，安全，可匿名
+
+ * 网络拓扑的变化不会影响发布和获取数据正确性，数据是通过加密学验证的
+
+ * 数据是公开的，可索引，可引用的，网络是开放的
+
+ * 也可构建只有少数人的私有网络，提供隐私性
+
+ * 使用 grpc+tls 加密传输，双向公钥验证，以后支持 webrtc
+
+ * 高效，低成本，协议简单可扩展
+
+---
+
+# Void Web Portal
+
+ * 基于 HTTP 的服务器，帮助没有节点能力的客户端进入网络
+
+ * 加入一个 Portal，相当于服务器 follow 了你的 feed
+
+ * HTTP API / Web UI / Mobile Client
+
+ * 密钥由用户保存在本地
+
+ * 可以屏蔽特定账户或特定内容
+
+ * 可以引入 KYC 注册机制或邀请机制
+
+ * 是一个更大容量的公共节点，但在网络中没有特殊角色
+
+---
+
+# 和 Dat，DHT，Ethereum 的集成
+
+ * 目前使用 Dat 的基础结构，之后使用其 Merkle Tree 结构做流式的稀疏同步
+
+  可以只加载一小部分数据即验证整条链的完整性
+
+ * 可以使用 DHT 做 feed 的扩展同步机制，适用特定服务和扩展协议
+
+ * Void 本身不提供共识机制（但违反共识的节点会被惩罚），可以把 head 写入到 Ethereum 保证共识
+
+ * 可以集成到 ENS，成为区块链上的个人链
+
+---
+
+# 构建网络上的应用
+
+ * twitter / 微博 / 朋友圈
+
+ * 基于群组的网络 / 小密圈
+
+ * 知乎
+
+ * 论坛
+
+ * slack
+
+ * email
+
+ * npm
+
+ * 证书/权限管理
+
+---
+
+# Void
+
+ * 类似 twitter 的网络拓扑，alpha 状态
+
+ * 将会发展成基于群组的结构
+
+ * 土法炼钢：ruby backend + vuejs + weui
+
+ * 移动端的网页版轻客户端，当前依赖 Portal 参与网络同步
+
+ * 自己备份管理密钥
+
+ * 将开发 rn 的轻客户端
+
+ * 重构了许多许多次
+
+ * 没有数字货币，没有共识机制
+
+ * 没有容量限制
+
+---
+
+# Void Roadmap
+
+ * 完善使用界面，添加群组功能，私密消息
+
+ * 替换成更好的加密通讯协议，和基于 UDP 的通讯协议（webrtc）
+
+ * 打磨协议，制定元数据规范，merkle tree 稀疏验证
+
+ * 长期评估隐私和安全，分布式容错性，抵御网络攻击能力
+
+---
+
+# 英特纳雄耐尔一定会实现！
+
+    </textarea>
+    <script src="./remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>

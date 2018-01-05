@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# IPFS
+## the InterPlanetary File System
+## 星际文件系统
+
+---
+
+#### IPFS是一个去中心化的文件共享网络
+#### 目标是建立一个全球性的网络来组织所有的文件资源（类似Amazon S3），最终的蓝图是成为互联网的基础设施并革新Web本身
+
+#### 由Juan Benet提出，并成立了一家名为Protocol Lab的公司进行开发
+
+---
+
+# Content Address
+
+ * 现有的基于HTTP的Web架构是一种基于位置的资源寻址机制（location address），提供的是获取资源的方式
+```
+https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png
+```
+ * Content Address则是基于内容的文件获取方式，使用Hash来验证文件内容，而允许资源以任意方式获取
+```
+magnet:?xt=urn:btih:9f9165d9a281a9b8e782cd5176bbcc8256fd1871&dn=ubuntu-16.04.1-desktop-amd64.iso
+```
+
+---
+
+# Content Address
+
+ * location address 机制比较简单，但却是中心化的，脆弱的
+
+ * content address 强调资源一致性，可靠性，开放性，并且使得去中心成为可能
+
+ * IPFS本质上就是一个 content address 的网络，集成一切的资源获取方式，使资源获取是可靠的，永久的，可缓存，开放的，因而可以是“星际的”
+
+ * 定义了 multihash 格式作为可升级的hash协议
+
+```
+/ipfs/XLYkgq61DYaQ8NhkcqyU7rLcnSa7dSHQ16x/foo.txt
+```
+
+---
+
+# 文件共享网络
+
+ * Kademlia DHT
+ * Bittorrent
+ * Git & Merkle DAG
+ * Bitswap
+
+
+---
+
+# Kademlia DHT
+
+ * 节点和资源都定义了同样长度的ID
+ * 定义了两个ID之间的一种距离，资源路由信息在近邻的ID中分布
+ * 可以实现高效的资源发现
+ * 可以抵抗若干攻击类型
+
+---
+
+# Bittorrent
+
+ * 使用KAD进行资源
+ * “一报还一报”的信用机制
+ * 优先下载分发稀有块
+
+---
+
+# Git
+
+ * 不可变对象
+ * Content Address
+ * 对象之间的连接
+ * 版本化的管理
+ * 增量的文件分发
+
+---
+
+# Merkle DAG
+
+ * 作为Git的基础，无环有向图
+ * 不可变的对象和历史，版本化，可分叉的数据结构
+ * 使用Hash来对资源寻址，验证有效性
+
+---
+
+# IPFS的设计
+
+ * Identities ID的生成和验证
+ * Network 管理节点间的连接和各种各样的通讯协议
+ * Routing 类似DHT的资源发现协议，并且是多层的，可替换的
+ * Exchange Bitswap文件分发管理协议，带有一定激励机制的market
+ * Objects Immutable，Linkable，Content-Addressed Merkle DAG
+ * Files 类似Git的版本化文件系统
+ * Naming 一个可变的域名指针
+
+
+---
+
+# ID
+
+```
+type Node struct {
+    NodeId NodeID
+    PubKey PublicKey
+    PriKey PrivateKey
+}
+
+```
+---
+
+# Network
+
+ * IPFS使用多种传输协议
+ * 内网传输和网络可靠性
+ * 对数据使用hash校验，也使用发送者的public key校验
+ * multiaddr
+```
+/ip4/5.6.7.8/tcp/5678/ip4/1.2.3.4/sctp/1234/
+```
+
+---
+
+# Bitswap
+
+ * 节点会记录传输的数据量
+ * 根据负债率控制传输的概率，作为激励机制
+ * 节点会交换账本
+
+---
+
+# File
+
+ * 一个资源可以作为一个文件夹
+ * 可以加载到文件系统（FUSE）
+ * blob，list，tree，commit
+
+---
+
+# IPNS
+
+ * 一个可变的命名系统，相当于文件的指针
+```
+/ipns/<NodeId>
+
+/ipns/XLF2ipQ4jD3UdeX5xp1KBgeHRhemUtaA8Vm/
+
+/ipns/XLF2ipQ4jD3UdeX5xp1KBgeHRhemUtaA8Vm/docs/ipfs
+```
+
+---
+
+# Conclusion
+
+ * 可升级，可扩展，可分层替换的协议族
+ * Go和JS两个实现同时进行，底层是libp2p
+ * 基本可用，但网络还不太稳定
+ * 颠覆HTTP
+
+---
+
+# 应用场景
+
+ * 文件存储
+ * CDN （cachable）
+ * 文件存储激励（filecoin）
+
+---
+
+# Swarm
+
+ * 去中心文件存储
+ * 和IPFS目标非常相近，处于较早的开发阶段
+ * 由ETH的社群和基金会维护支持
+ * devp2p vs libp2p
+ * 匿名性和智能合约的可访问性
+ * world computer
+
+ * 但IPFS的协议是可扩展的...
+
+---
+
+# Whisper
+
+  * 基于devp2p
+  * 去中心通讯协议
+  * 匿名性
+  * 可以用web3调用
+  * 消息的TTL与proof of work
+
+---
+
+# 技术问题
+
+ * 网络的性能和效率
+ * 抵御攻击和劣质节点的干扰
+ * 稀有块的保护
+ * 大文件 VS 重要文件
+ * 匿名性
+
+---
+
+# 应用场景
+
+    </textarea>
+    <script src="./remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>

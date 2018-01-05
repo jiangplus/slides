@@ -5,7 +5,6 @@ Secure Scuttlebutt - Decentralized Social Network
 
 ---
 
-
 现在我们进行通讯/社交/获取信息的方式：
 
   * 电子邮件
@@ -55,8 +54,6 @@ Secure Scuttlebutt - Decentralized Social Network
 ---
 
 We need to be decentralized!!
-
-![image](dominic2.jpg)
 
 ---
 
@@ -132,4 +129,8 @@ Links:
 Join a pub!
 
 ssb.piple.in:8008:@bSv6il/f8Llg0S/P59KeTpTdMmAdnKMASai7sX+Hifg=.ed25519~XI++AhntkQT3XyrfH1KWzqaePUMmPuHg0P+t80ngOKU=
+
+---
+
+![image](dominic2.jpg)
 
