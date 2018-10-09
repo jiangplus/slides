@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Void</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle
+
+
+ # Void : a fluid distributed network
+
+---
+
+### Void
+
+ * append only feed 只增数据流
+ * 一个软共识的去中心自治网络
+
+---
+
+### 基本特性
+
+ * layer2
+ * 类似区块链的数据结构，以消息为基本单元
+ * 每个用户是一条独立的链，按需发布消息，不需要矿工确认，没有强制的共识机制
+ * 与不同的区块链交互，提供灵活的数据验证/见证机制，可插拔的共识系统 （plasma / raiden）
+
+ * 消息体可以承载任意的 payload，不同应用只对自己相关的消息类型感兴趣
+ * 可以非常容易软分叉
+
+---
+
+### 数据结构
+
+ * 每个用户是一条独立的链（feed），按需发布消息，不需要矿工确认，没有矿工费和等待时间的限制
+ * 每一个 feed 可以分成不同的命名空间，用于不同的应用，分配不同的权限
+ * feed 之间互相 follow，形成类似 twitter 的网络
+ * follow 关系意味着关注和缓存对方链的数据，一种弱信任关系
+
+---
+
+### P2P 机制
+
+ * 网络中有一些帮助缓存和分发数据的中继节点 hub
+ * 通过一定准入机制，自动 follow 一些 feed，激励或非激励地提供服务
+
+---
+
+### 防止 double spending
+
+ * 需要共识的部分可以与以太坊或其他主链交互，将当前消息的 hash 和 signature 写入合约，保证 feed 有唯一的版本
+ * hub 或其他节点如果遇到一个 feed 的两个有同样序号的不同消息，将终止对 feed 的服务，并把 fraud proof 本身发布出去
+
+---
+
+### Void 的技术核心
+
+ * Void 提供了一个灵活的应用层数据流协议
+ * 不同应用定义不同的消息类型，构建各自的视图（View）
+ * 使用 GraphQL 进行复杂的查询
+ * 增强和简化 DApp 的开发生态
+
+---
+
+### Void 的技术核心
+
+ * 定义了一种简单的链式结构，以及链间交互行为
+ * 灵活，具有包容性的设计
+ * 作为应用层数据网络，补充区块链的生态系统
+ * 解决 p2p 网络的 messaging 问题
+
+---
+
+### 应用：构建社交网络，hackernews
+
+ * 每个账户都可以发送消息，互相关注，评论和互动
+ * 朋友的朋友通常也是朋友，feed 之间具有逻辑的近邻性，可以高效的同步
+ * 消息成本很低，可以自愿缓存数据
+ * 具有一定的内容控制能力 anti-spam
+
+---
+
+### 应用：数据同步与文件分发，npm，软件分发，证书透明
+
+ * 作为 authenticated feed 发布新版本的软件和文件资源
+ * 数据可验证，并且通过 feed relay 提供权威性证明
+ * 稀疏的，增量的，实时的动态文件集更新
+
+---
+
+### 应用：游戏
+
+ * 通过 feed 承载游戏的消息，部分消息可以提交链上验证
+ * 游戏平台提供一定的消息分发服务
+ * 发行 ERC721 token
+ * 适合棋类，扑克牌等回合制游戏
+
+
+相对高的退出成本，使资金尽可能多的留在子链上
+为避免 merkle proof 膨胀，也可以减少过长的链
+
+
+
+
+
+
+    </textarea>
+    <script src="./remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
