@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PWL Aurora</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      img {
+        max-width: 80%;
+        max-height: 80%;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle
+
+# Amazon Aurora
+
+### Design Considerations for High Throughput Cloud-Native Relational Databases
+
+---
+
+云原生的数据库系统
+
+兼容 MySQL 和 PostgreSQL
+
+分布式存储，容错，高可用
+
+多租户，低成本，弹性扩缩容
+
+---
+
+数据库引擎和存储层分离
+
+基于开源的 MySQL 和 PostgreSQL，100% 兼容开源的功能
+
+提供容错，可伸缩，可自愈的分布式存储抽象层
+
+计算存储分离：更快添加新节点，适应不同场景的需求
+
+---
+
+云环境中存在持续的 background noise
+
+2PC, Paxos 都需要等待节点达成一致，导致较大的性能开销和延迟
+
+通过异步日志复制使节点状态达成一致
+
+写路径的完全异步化
+
+---
+
+## 写放大
+
+
+![mysql](mysql.png)
+
+---
+
+## 写放大
+
+MySQL 每个事务的 IO 数是 Aurora 的 7.7 倍
+
+![aurora](aurora.png)
+
+---
+
+redo log 复制
+
+The Log is the Database
+
+后台进程持续 materialize
+
+备份到 S3
+
+---
+
+## 一致性条件
+
+Vr + Vw > V
+
+Vw > V / 2
+
+
+V = 6, Vr = 3, Vw = 4
+基于 quorum，三区六副本
+
+---
+
+连续的逻辑日志单元 Segment (10GB)
+
+6 个 Segment 副本构成 Partition Group (PG)
+
+若干 PG 构成一个 DB Volume
+
+---
+
+平均故障时间必须大于平均修复时间
+
+10GB Segmnet 在 10G 网络中需要 10s 恢复
+
+系统能够快速自愈，保证恢复 quorum
+
+软件升级和安全补丁
+
+---
+
+## 日志复制
+
+持续通过后台进程同步
+
+Log Sequence Number (LSN) 日志中的记录单元，单调递增
+
+Volume Complete LSN (VCL) 所有小于 VCL 的记录都存在，大于 VCL 的部分在恢复时截断
+
+Consistency Point LSN (CPL) 一致的事务单元
+
+Volume Durable LSN (VDL) 最高的 CPL，小于 VCL
+
+
+  For example, even if we have the complete data up to LSN 1007, the database may have declared that only 900, 1000, and 1100 are CPLs, in which case, we must truncate at 1000. We are complete to 1007, but only durable to 1000.
+
+---
+
+## 写路径
+
+写入时分配有序、唯一的 LSN
+
+LSN < VDL + LAL (LSN Allocation Limit, 10M)
+
+避免数据库远离存储系统的一致性状态
+
+每个 Segment 只会看到部分的 Volume
+
+Segment Complete LSN (SCL) 表示 PG 达到的最大 LSN
+
+当 VDL 大于一个事务 commit 的 LSN 时，事务完成提交并返回
+
+---
+
+## 读路径
+
+不需要 read quorum，只读取当前副本的最新状态
+
+MVCC，snapshot isolation
+
+维护当前读取事务的 read-point，代表读取版本的 VDL
+
+Protection Group Min Read Point LSN (PGMRPL)
+
+小于 PGMRPL 的日志可以删除
+
+---
+
+## 复制
+
+1 writer, 15 replicas
+
+multi writers
+
+一致性保证：
+
+1) 只有 VDL 之前的日志会被应用
+
+2) MTR 的日志记录会被原子性写入
+
+---
+
+## 故障恢复
+
+启动时会有 quorum read，计算 VDL
+
+故障恢复过程和正常同步过程是一致的
+
+将恢复机制从数据库系统解耦
+
+---
+
+计算和存储分离
+
+减少数据库系统的负担
+
+容错，不需要等待数据提交
+
+完全异步化写入路径
+
+
+
+
+
+
+    </textarea>
+    <script src="./remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
